@@ -1,14 +1,56 @@
-import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, {useState, useEffect} from 'react';
+import {SafeAreaView, StyleSheet, FlatList} from 'react-native';
+import {Container} from 'native-base';
+import DetailedCard from '../../components/DetailedCard';
+import {connect} from 'react-redux';
 
-const Detail = () => {
+const Detail = props => {
+  const [list, setList] = useState([]);
+
+  useEffect(() => {
+    props.navigation.setOptions({title: props.selectedData});
+    props.allData.map(data =>
+      data.mechanics && data.mechanics.length > 0 ? search(data) : null,
+    );
+  }, []);
+
+  const search = data => {
+    data.mechanics.map(item =>
+      item.name === props.selectedData ? pushList(data) : null,
+    );
+  };
+
+  const pushList = data => {
+    let tempList = list;
+    tempList.push(data);
+    setList(tempList);
+  };
+
   return (
-    <View>
-      <Text>Detail</Text>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <Container>
+        <FlatList
+          data={list}
+          renderItem={({item}) => <DetailedCard data={item} />}
+          keyExtractor={() => Math.random().toString(16)}
+        />
+      </Container>
+    </SafeAreaView>
   );
 };
 
-export default Detail;
+const mapStateToProps = state => {
+  return {
+    allData: state.getData,
+    selectedData: state.selectedData,
+  };
+};
 
-const styles = StyleSheet.create({});
+export default connect(mapStateToProps)(Detail);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
